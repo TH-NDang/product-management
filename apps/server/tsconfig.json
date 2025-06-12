@@ -8,13 +8,11 @@
 		"skipLibCheck": true,
 		"baseUrl": "./",
 		"paths": {
-		  "@/*": ["./src/*"]
+			"@/*": ["./src/*"]
 		},
 		"outDir": "./dist",
-		"types": [
-        "bun"
-    ],
-	  "composite": true,
+		"types": ["bun"],
+		"composite": true,
 		"jsx": "react-jsx",
 		"jsxImportSource": "hono/jsx"
 	},

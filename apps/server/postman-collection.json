@@ -1,0 +1,210 @@
+{
+	"info": {
+		"name": "Product Management Server API",
+		"description": "Complete testing collection for the Product Management Server",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:3000",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Health Checks",
+			"item": [
+				{
+					"name": "Basic Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/",
+							"host": ["{{baseUrl}}"],
+							"path": [""]
+						}
+					}
+				},
+				{
+					"name": "Detailed Health Check",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["health"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Sign Up",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"testpassword123\",\n  \"name\": \"Test User\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/sign-up",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "sign-up"]
+						}
+					}
+				},
+				{
+					"name": "Sign In",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"testpassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/sign-in",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "sign-in"]
+						}
+					}
+				},
+				{
+					"name": "Get Session",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/session",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "session"]
+						}
+					}
+				},
+				{
+					"name": "Sign Out",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/sign-out",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "sign-out"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Error Testing",
+			"item": [
+				{
+					"name": "404 Test",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/non-existent-endpoint",
+							"host": ["{{baseUrl}}"],
+							"path": ["non-existent-endpoint"]
+						}
+					}
+				},
+				{
+					"name": "Malformed JSON Test",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"invalid\": \"json\",\n  \"missing\": \"required_fields\"\n}"
+						},
+						"url": {
+							"raw": "{{baseUrl}}/api/auth/sign-in",
+							"host": ["{{baseUrl}}"],
+							"path": ["api", "auth", "sign-in"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Performance Testing",
+			"item": [
+				{
+					"name": "Connection Pool Test 1",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Connection Pool Test 2",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["health"]
+						}
+					}
+				},
+				{
+					"name": "Connection Pool Test 3",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}/health",
+							"host": ["{{baseUrl}}"],
+							"path": ["health"]
+						}
+					}
+				}
+			]
+		}
+	]
+}

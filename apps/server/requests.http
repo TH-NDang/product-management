@@ -1,0 +1,107 @@
+### =======================================================
+### SERVER TESTING REQUESTS
+### =======================================================
+
+@baseUrl = http://localhost:3000
+@contentType = application/json
+
+### =======================================================
+### 1. HEALTH CHECK ENDPOINTS
+### =======================================================
+
+### Basic health check
+GET {{baseUrl}}/
+Accept: text/plain
+
+### Detailed health check with database status
+GET {{baseUrl}}/health
+Accept: application/json
+
+### =======================================================
+### 2. AUTH ENDPOINTS TESTING
+### =======================================================
+
+### Register new user
+POST {{baseUrl}}/api/auth/sign-up
+Content-Type: {{contentType}}
+
+{
+  "email": "test@example.com",
+  "password": "testpassword123",
+  "name": "Test User"
+}
+
+### Login user
+POST {{baseUrl}}/api/auth/sign-in
+Content-Type: {{contentType}}
+
+{
+  "email": "test@example.com", 
+  "password": "testpassword123"
+}
+
+### Get current session
+GET {{baseUrl}}/api/auth/session
+Accept: application/json
+
+### Logout
+POST {{baseUrl}}/api/auth/sign-out
+Content-Type: {{contentType}}
+
+### =======================================================
+### 3. CORS TESTING
+### =======================================================
+
+### Test CORS preflight
+OPTIONS {{baseUrl}}/api/auth/sign-in
+Origin: http://localhost:3000
+Access-Control-Request-Method: POST
+Access-Control-Request-Headers: Content-Type, Authorization
+
+### =======================================================
+### 4. ERROR TESTING
+### =======================================================
+
+### Test 404 endpoint
+GET {{baseUrl}}/non-existent-endpoint
+Accept: application/json
+
+### Test malformed JSON
+POST {{baseUrl}}/api/auth/sign-in
+Content-Type: {{contentType}}
+
+{
+  "invalid": "json",
+  "missing": "required_fields"
+}
+
+### =======================================================
+### 5. PERFORMANCE TESTING
+### =======================================================
+
+### Multiple rapid requests to test connection pooling
+GET {{baseUrl}}/health
+
+###
+GET {{baseUrl}}/health
+
+###
+GET {{baseUrl}}/health
+
+###
+GET {{baseUrl}}/health
+
+###
+GET {{baseUrl}}/health
+
+### =======================================================
+### 6. DEVELOPMENT UTILITIES
+### =======================================================
+
+### Check if server is running
+GET {{baseUrl}}/
+Accept: text/plain
+
+### Database connection test
+GET {{baseUrl}}/health
+Accept: application/json 
