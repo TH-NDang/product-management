@@ -1,7 +1,6 @@
 "use client";
 
-import SignInForm from "@/components/sign-in-form";
-import SignUpForm from "@/components/sign-up-form";
+import { SignInForm, SignUpForm } from "@/components/auth";
 import { useState } from "react";
 
 export default function LoginPage() {
