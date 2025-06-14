@@ -1,26 +1,17 @@
-"use client";
-import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import { DataTable } from "@/components/data-table";
+import { SectionCards } from "@/components/section-cards";
 
-export default function Dashboard() {
-	const router = useRouter();
-	const { data: session, isPending } = authClient.useSession();
+import data from "./data.json";
 
-	useEffect(() => {
-		if (!session && !isPending) {
-			router.push("/login");
-		}
-	}, [session, isPending, router.push]);
-
-	if (isPending) {
-		return <div>Loading...</div>;
-	}
-
+export default function Page() {
 	return (
-		<div>
-			<h1>Dashboard</h1>
-			<p>Welcome {session?.user.name}</p>
-		</div>
+		<>
+			<SectionCards />
+			<div className="px-4 lg:px-6">
+				<ChartAreaInteractive />
+			</div>
+			<DataTable data={data} />
+		</>
 	);
 }
