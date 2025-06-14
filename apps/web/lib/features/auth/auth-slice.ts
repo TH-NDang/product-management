@@ -1,24 +1,35 @@
-import type { Session } from "@/lib/auth";
 import type { RootState } from "@/lib/store";
+import type { User } from "@/lib/types";
 import { type PayloadAction, type Slice, createSlice } from "@reduxjs/toolkit";
 
 export interface AuthState {
-	session: Session | null;
+	user: User | null;
+	token: string | null;
 }
 
 const initialState: AuthState = {
-	session: null,
+	user: null,
+	token: null,
 };
 
 const authSlice = createSlice({
 	name: "auth",
 	initialState,
 	reducers: {
-		setSession: (state, action: PayloadAction<{ session: Session | null }>) => {
-			state.session = action.payload.session;
+		setSession: (
+			state,
+			action: PayloadAction<{ user: User | null; token: string | null }>,
+		) => {
+			if (action.payload.user) {
+				state.user = action.payload.user;
+			} else {
+				state.user = null;
+			}
+			state.token = action.payload.token;
 		},
 		logout: (state) => {
-			state.session = null;
+			state.user = null;
+			state.token = null;
 		},
 	},
 });

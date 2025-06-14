@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { authClient } from "@/lib/auth/auth-client";
 import { setSession } from "@/lib/features/auth/auth-slice";
 import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import type { User } from "@/lib/types";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
@@ -21,14 +22,26 @@ export default function DashboardLayout({
 	const router = useRouter();
 	const { data, isPending } = authClient.useSession();
 	const dispatch = useAppDispatch();
-	const session = useAppSelector((state) => state.auth.session);
 
 	useEffect(() => {
 		if (!data && !isPending) {
 			router.push("/login");
 		}
 
-		dispatch(setSession({ session: data || null }));
+		const user: User | null = data?.user
+			? {
+					name: data.user.name ?? "",
+					email: data.user.email ?? "",
+					image: data.user.image ?? null,
+				}
+			: null;
+
+		dispatch(
+			setSession({
+				user,
+				token: data?.session?.token ?? null,
+			}),
+		);
 	}, [data, isPending, router, dispatch]);
 
 	if (isPending) {
