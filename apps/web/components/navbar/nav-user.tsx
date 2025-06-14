@@ -1,16 +1,15 @@
 "use client";
 
 import {
-	IconCreditCard,
 	IconDotsVertical,
 	IconLogout,
-	IconNotification,
 	IconUserCircle,
 } from "@tabler/icons-react";
 
-import { type User, authClient } from "@/lib/auth";
+import { authClient } from "@/lib/auth/auth-client";
 import { useAppSelector } from "@/lib/hooks";
 import type { RootState } from "@/lib/store";
+import type { User } from "@/lib/types";
 import {
 	Avatar,
 	AvatarFallback,
@@ -35,10 +34,9 @@ import { Settings } from "lucide-react";
 
 export function NavUser() {
 	const { isMobile } = useSidebar();
-	const user: User | null = useAppSelector((state: RootState) => {
-		const session = state.auth.session;
-		return session?.user || null;
-	});
+	const user: User | null = useAppSelector(
+		(state: RootState) => state.auth.user,
+	);
 
 	return (
 		<SidebarMenu>
