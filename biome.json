@@ -18,6 +18,7 @@
 			"src-tauri",
 			".nuxt",
 			"ui",
+			"supabase",
 			"eslint-config",
 			"typescript-config"
 		]
