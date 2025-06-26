@@ -9,7 +9,7 @@ router = APIRouter()
 class StatusResponse(BaseModel):
     server: str
     database: str
-
+    supabase: str
 
 @router.get(
     "/status",
@@ -29,4 +29,9 @@ async def status(settings: Settings = Depends(get_settings)):
     return StatusResponse(
         server="ok",
         database="ok" if settings.DATABASE_URL else "Not found DATABASE_URL",
+        supabase=(
+            "ok"
+            if settings.SUPABASE_DB_URL and settings.NEXT_PUBLIC_SUPABASE_ANON_KEY
+            else "Not found SUPABASE_DB_URL or NEXT_PUBLIC_SUPABASE_ANON_KEY"
+        ),
     )

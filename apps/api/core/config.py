@@ -13,5 +13,11 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(
         default=60, description="Access Token Expire Minutes"
     )
+    SUPABASE_JWT_SECRET: str = Field(default="", description="Supabase JWT Secret")
+    SUPABASE_DB_URL: str = Field(default="", description="Supabase DB URL")
+    SUPABASE_PROJECT_URL: str = Field(default="", description="Supabase Project URL")
+    NEXT_PUBLIC_SUPABASE_ANON_KEY: str = Field(
+        default="", description="Supabase Anon Key"
+    )
 
     model_config = SettingsConfigDict(env_file=".env")
