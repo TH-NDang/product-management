@@ -1,7 +1,15 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
 
 from .routers import status
+from .dependencies.database import create_db_and_tables
+
+
+@asynccontextmanager
+async def lifespan(__app: FastAPI):
+    create_db_and_tables()
+    yield
 
 
 app = FastAPI(
@@ -12,6 +20,7 @@ app = FastAPI(
         "name": "Ngoc Dang",
         "email": "ndang2319@gmail.com",
     },
+    lifespan=lifespan,
 )
 
 app.add_middleware(
