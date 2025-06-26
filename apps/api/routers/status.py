@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
-from ..core import config
+from api.core.config import Settings
+from api.dependencies.configs import get_settings
 
 router = APIRouter()
 
@@ -18,7 +19,7 @@ class StatusResponse(BaseModel):
     tags=["Status", "Test"],
     response_model=StatusResponse,
 )
-async def status(settings: config.Settings = Depends(config.get_settings)):
+async def status(settings: Settings = Depends(get_settings)):
     """
     Health check endpoint to verify that the API is running.
 
