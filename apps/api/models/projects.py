@@ -3,6 +3,7 @@ from datetime import datetime
 
 from sqlmodel import Field, SQLModel
 
+
 # export const projects = pgTable("projects", {
 # 	id: text("id").primaryKey().$defaultFn(() => sql`generate_ulid()`),
 # 	name: text("name").notNull(),
@@ -15,15 +16,26 @@ from sqlmodel import Field, SQLModel
 # 	createdAt: timestamp("created_at").defaultNow().notNull(),
 # 	updatedAt: timestamp("updated_at").defaultNow().notNull(),
 # });
-
-
-class Project(SQLModel, table=True):
-    id: str = Field(default_factory=uuid.uuid4, primary_key=True)
+class ProjectBase(SQLModel):
     name: str = Field(index=True)
-    description: str
+    description: str | None = Field(default=None)
+
+
+class Project(ProjectBase, table=True):
+    id: str = Field(default_factory=uuid.uuid4, primary_key=True)
     status: str
-    start_date: datetime = Field(default_factory=datetime.now)
-    end_date: datetime | None = Field(default_factory=datetime.now)
+    start_date: datetime | None = None
+    end_date: datetime | None = None
+    team_id: str = Field(index=True)
+    created_by_id: str = Field(index=True)
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)
+
+class ProjectPublic(ProjectBase):
+    id: str = Field(default_factory=uuid.uuid4, primary_key=True)
+    status: str
+    start_date: datetime | None = None
+    end_date: datetime | None = None
     team_id: str = Field(index=True)
     created_by_id: str = Field(index=True)
     created_at: datetime = Field(default_factory=datetime.now)

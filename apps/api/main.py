@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-from .routers import status
+from .routers import status, projects
 from .dependencies.database import create_db_and_tables
 
 
@@ -32,3 +32,4 @@ app.add_middleware(
 )
 
 app.include_router(status.router)
+app.include_router(projects.router)
