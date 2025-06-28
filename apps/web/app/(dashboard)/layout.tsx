@@ -9,6 +9,7 @@ import type { User } from "@/lib/types";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
+import { configNav } from "@/lib/config";
 import {
 	SidebarInset,
 	SidebarProvider,
@@ -25,7 +26,7 @@ export default function DashboardLayout({
 
 	useEffect(() => {
 		if (!data && !isPending) {
-			router.push("/login");
+			router.push(`${configNav.loginLink}`);
 		}
 
 		const user: User | null = data?.user
