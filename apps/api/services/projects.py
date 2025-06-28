@@ -1,4 +1,5 @@
-from models.projects import Project, ProjectPublic
+from models.projects import ProjectPublic
+from models.tables import Project
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
