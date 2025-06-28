@@ -11,5 +11,5 @@ router = APIRouter(
 
 
 @router.get("/protected-endpoint")
-async def protected_route(current_user=Depends(get_current_user)):
+async def protected_route(current_user=Depends(dependency=get_current_user)):
     return {"message": f"Hello {current_user.email}"}
