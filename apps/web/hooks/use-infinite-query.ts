@@ -347,6 +347,11 @@ function useInfiniteQueryAPI<TData extends { id: string }>(
     }
   }, [props.endpoint, props.pageSize, state.hasInitialFetch]);
 
+  const refresh = () => {
+    storeRef.current = createAPIStore<TData>(props);
+    storeRef.current.initialize();
+  };
+
   return {
     data: state.data,
     count: state.count,
@@ -356,6 +361,7 @@ function useInfiniteQueryAPI<TData extends { id: string }>(
     error: state.error,
     hasMore: state.count > state.data.length,
     fetchNextPage: storeRef.current.fetchNextPage,
+    refresh,
   };
 }
 

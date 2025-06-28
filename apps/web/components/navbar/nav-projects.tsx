@@ -8,8 +8,22 @@ import {
 	IconTrash,
 } from "@tabler/icons-react";
 
-import { useInfiniteQueryAPI } from "@/hooks/use-infinite-query";
+import {
+	useDeleteProject,
+	useProjectsWithRedux,
+} from "@/hooks/use-projects-query";
 import { type Project, useNavigation } from "@/lib/config";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+	AlertDialogTrigger,
+} from "@workspace/ui/components/alert-dialog";
 import {
 	DropdownMenu,
 	DropdownMenuContent,
@@ -31,24 +45,37 @@ import {
 } from "@workspace/ui/components/sidebar";
 import { Loader2, Plus } from "lucide-react";
 import Link from "next/link";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { AddProjectModal } from "./add-project-modal";
 
 export function NavProjects() {
 	const { isMobile } = useSidebar();
 	const { isActive, navUtils } = useNavigation();
+	const [deletingProjectId, setDeletingProjectId] = useState<string | null>(
+		null,
+	);
+	const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+	const [showDeleteDialog, setShowDeleteDialog] = useState<{
+		id: string;
+		name: string;
+	} | null>(null);
 
-	// Fetch projects using the API
+	// Use React Query with Redux integration
 	const {
-		data: projects,
+		data: projectsData,
 		isLoading,
 		isFetching,
-		hasMore,
+		hasNextPage,
 		fetchNextPage,
 		error,
-	} = useInfiniteQueryAPI<Project>({
-		endpoint: "/projects",
-		pageSize: 10,
-	});
+	} = useProjectsWithRedux(10);
+
+	// Use delete mutation
+	const deleteMutation = useDeleteProject();
+
+	// Extract all projects from infinite query
+	const projects = projectsData?.pages.flat() || [];
 
 	// Convert projects to nav items
 	const projectNavItems = projects.map((project) =>
@@ -57,100 +84,187 @@ export function NavProjects() {
 
 	// Load more projects when scrolling
 	useEffect(() => {
-		if (hasMore && !isFetching) {
+		if (hasNextPage && !isFetching) {
 			fetchNextPage();
 		}
-	}, [hasMore, isFetching, fetchNextPage]);
+	}, [hasNextPage, isFetching, fetchNextPage]);
+
+	// Handle project deletion
+	const handleDeleteProject = async (
+		projectId: string,
+		projectName: string,
+	) => {
+		setDeletingProjectId(projectId);
+		setOpenDropdownId(null); // Close dropdown after delete
+		setShowDeleteDialog(null); // Close dialog
+
+		try {
+			await deleteMutation.mutateAsync(projectId);
+			toast.success(`Project "${projectName}" deleted successfully`);
+		} catch (error) {
+			toast.error("Failed to delete project");
+		} finally {
+			setDeletingProjectId(null);
+		}
+	};
+
+	// Handle project creation
+	const handleProjectCreated = () => {
+		// React Query will automatically refetch the data
+		toast.success("Project created successfully!");
+	};
+
+	// Handle delete button click
+	const handleDeleteClick = (projectId: string, projectName: string) => {
+		setShowDeleteDialog({ id: projectId, name: projectName });
+		setOpenDropdownId(null); // Close dropdown
+	};
 
 	return (
-		<SidebarGroup className="group-data-[collapsible=icon]:hidden">
-			<SidebarGroupLabel>Projects</SidebarGroupLabel>
-			<SidebarGroupAction title="Add Project">
-				<Plus /> <span className="sr-only">Add Project</span>
-			</SidebarGroupAction>
-			<SidebarGroupContent>
-				<ScrollArea className="h-[300px] w-full">
-					<SidebarMenu>
-						{isLoading ? (
-							<SidebarMenuItem>
-								<SidebarMenuButton className="text-sidebar-foreground/70">
-									<Loader2 className="h-4 w-4 animate-spin" />
-									<span>Loading projects...</span>
-								</SidebarMenuButton>
-							</SidebarMenuItem>
-						) : error ? (
-							<SidebarMenuItem>
-								<SidebarMenuButton className="text-sidebar-foreground/70">
-									<span>Error loading projects</span>
-								</SidebarMenuButton>
-							</SidebarMenuItem>
-						) : projectNavItems.length === 0 ? (
-							<SidebarMenuItem>
-								<SidebarMenuButton className="text-sidebar-foreground/70">
-									<span>No projects found</span>
-								</SidebarMenuButton>
-							</SidebarMenuItem>
-						) : (
-							projectNavItems.map((item) => {
-								const active = isActive(item.url);
+		<>
+			<SidebarGroup className="group-data-[collapsible=icon]:hidden">
+				<SidebarGroupLabel>Projects</SidebarGroupLabel>
+				<SidebarGroupAction title="Add Project">
+					<AddProjectModal onProjectCreated={handleProjectCreated} />
+				</SidebarGroupAction>
+				<SidebarGroupContent>
+					<ScrollArea className="h-[300px] w-full">
+						<SidebarMenu>
+							{isLoading ? (
+								<SidebarMenuItem>
+									<SidebarMenuButton className="text-sidebar-foreground/70">
+										<Loader2 className="h-4 w-4 animate-spin" />
+										<span>Loading projects...</span>
+									</SidebarMenuButton>
+								</SidebarMenuItem>
+							) : error ? (
+								<SidebarMenuItem>
+									<SidebarMenuButton className="text-sidebar-foreground/70">
+										<span>Error loading projects</span>
+									</SidebarMenuButton>
+								</SidebarMenuItem>
+							) : projectNavItems.length === 0 ? (
+								<SidebarMenuItem>
+									<SidebarMenuButton className="text-sidebar-foreground/70">
+										<span>No projects found</span>
+									</SidebarMenuButton>
+								</SidebarMenuItem>
+							) : (
+								projectNavItems.map((item) => {
+									const active = isActive(item.url);
+									const project = projects.find(
+										(p) => `/projects/${p.id}` === item.url,
+									);
+									const isDropdownOpen = openDropdownId === project?.id;
 
-								return (
-									<SidebarMenuItem key={item.name}>
-										<SidebarMenuButton
-											asChild
-											isActive={active}
-											tooltip={item.name}
-										>
-											<Link href={item.url}>
-												<item.icon />
-												<span>{item.name}</span>
-											</Link>
-										</SidebarMenuButton>
-										<DropdownMenu>
-											<DropdownMenuTrigger asChild>
-												<SidebarMenuAction
-													showOnHover
-													className="rounded-sm data-[state=open]:bg-accent"
-												>
-													<IconDots />
-													<span className="sr-only">More</span>
-												</SidebarMenuAction>
-											</DropdownMenuTrigger>
-											<DropdownMenuContent
-												className="w-24 rounded-lg"
-												side={isMobile ? "bottom" : "right"}
-												align={isMobile ? "end" : "start"}
+									return (
+										<SidebarMenuItem key={item.name}>
+											<SidebarMenuButton
+												asChild
+												isActive={active}
+												tooltip={item.name}
 											>
-												<DropdownMenuItem>
-													<IconFolder />
-													<span>Open</span>
-												</DropdownMenuItem>
-												<DropdownMenuItem>
-													<IconShare3 />
-													<span>Share</span>
-												</DropdownMenuItem>
-												<DropdownMenuSeparator />
-												<DropdownMenuItem variant="destructive">
-													<IconTrash />
-													<span>Delete</span>
-												</DropdownMenuItem>
-											</DropdownMenuContent>
-										</DropdownMenu>
-									</SidebarMenuItem>
-								);
-							})
-						)}
-						{isFetching && hasMore && (
-							<SidebarMenuItem>
-								<SidebarMenuButton className="text-sidebar-foreground/70">
-									<Loader2 className="h-4 w-4 animate-spin" />
-									<span>Loading more...</span>
-								</SidebarMenuButton>
-							</SidebarMenuItem>
-						)}
-					</SidebarMenu>
-				</ScrollArea>
-			</SidebarGroupContent>
-		</SidebarGroup>
+												<Link href={item.url}>
+													<item.icon />
+													<span>{item.name}</span>
+												</Link>
+											</SidebarMenuButton>
+											<DropdownMenu
+												open={isDropdownOpen}
+												onOpenChange={(open) =>
+													setOpenDropdownId(open ? project?.id || null : null)
+												}
+											>
+												<DropdownMenuTrigger asChild>
+													<SidebarMenuAction
+														showOnHover
+														className="rounded-sm data-[state=open]:bg-accent"
+													>
+														<IconDots />
+														<span className="sr-only">More</span>
+													</SidebarMenuAction>
+												</DropdownMenuTrigger>
+												<DropdownMenuContent
+													className="w-24 rounded-lg"
+													side={isMobile ? "bottom" : "right"}
+													align={isMobile ? "end" : "start"}
+												>
+													<DropdownMenuItem asChild>
+														<Link href={item.url}>
+															<IconFolder />
+															<span>Open</span>
+														</Link>
+													</DropdownMenuItem>
+													<DropdownMenuItem>
+														<IconShare3 />
+														<span>Share</span>
+													</DropdownMenuItem>
+													<DropdownMenuSeparator />
+													<DropdownMenuItem
+														variant="destructive"
+														disabled={
+															deleteMutation.isPending &&
+															deletingProjectId === project?.id
+														}
+														onClick={() =>
+															project &&
+															handleDeleteClick(project.id, item.name)
+														}
+													>
+														{deleteMutation.isPending &&
+														deletingProjectId === project?.id ? (
+															<Loader2 className="h-4 w-4 animate-spin" />
+														) : (
+															<IconTrash />
+														)}
+														<span>Delete</span>
+													</DropdownMenuItem>
+												</DropdownMenuContent>
+											</DropdownMenu>
+										</SidebarMenuItem>
+									);
+								})
+							)}
+							{isFetching && hasNextPage && (
+								<SidebarMenuItem>
+									<SidebarMenuButton className="text-sidebar-foreground/70">
+										<Loader2 className="h-4 w-4 animate-spin" />
+										<span>Loading more...</span>
+									</SidebarMenuButton>
+								</SidebarMenuItem>
+							)}
+						</SidebarMenu>
+					</ScrollArea>
+				</SidebarGroupContent>
+			</SidebarGroup>
+
+			{/* Delete Confirmation Dialog */}
+			<AlertDialog
+				open={!!showDeleteDialog}
+				onOpenChange={(open) => !open && setShowDeleteDialog(null)}
+			>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>Delete Project</AlertDialogTitle>
+						<AlertDialogDescription>
+							Are you sure you want to delete "{showDeleteDialog?.name}"? This
+							action cannot be undone.
+						</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter>
+						<AlertDialogCancel>Cancel</AlertDialogCancel>
+						<AlertDialogAction
+							onClick={() =>
+								showDeleteDialog &&
+								handleDeleteProject(showDeleteDialog.id, showDeleteDialog.name)
+							}
+							className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+						>
+							Delete
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
+		</>
 	);
 }

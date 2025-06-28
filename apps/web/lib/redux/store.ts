@@ -4,11 +4,13 @@ import {
 	configureStore,
 } from "@reduxjs/toolkit";
 import authReducer from "../features/auth/auth-slice";
+import projectsReducer from "./projects-slice";
 
 export const makeStore = () => {
 	return configureStore({
 		reducer: {
 			auth: authReducer,
+			projects: projectsReducer,
 		},
 	});
 };
