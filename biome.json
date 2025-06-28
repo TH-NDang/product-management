@@ -45,6 +45,9 @@
 						"functions": ["clsx", "cva", "cn"]
 					}
 				}
+			},
+			"suspicious": {
+				"noArrayIndexKey": "off"
 			}
 		}
 	},
