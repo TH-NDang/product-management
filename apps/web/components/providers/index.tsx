@@ -1,5 +1,6 @@
 "use client";
 
+import { AuthProvider } from "@/lib/supabase/auth-provider";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import StoreProvider from "./store-provider";
 
@@ -12,7 +13,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
 			disableTransitionOnChange
 			enableColorScheme
 		>
-			<StoreProvider>{children}</StoreProvider>
+			<StoreProvider>
+				<AuthProvider>{children}</AuthProvider>
+			</StoreProvider>
 		</NextThemesProvider>
 	);
 }

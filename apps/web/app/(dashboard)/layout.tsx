@@ -2,51 +2,32 @@
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
-import { authClient } from "@/lib/auth/auth-client";
-import { setSession } from "@/lib/features/auth/auth-slice";
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
-import type { User } from "@/lib/types";
+import { configNav } from "@/lib/config";
+import { useAuth } from "@/lib/supabase/auth-provider";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
-import { configNav } from "@/lib/config";
 import {
 	SidebarInset,
 	SidebarProvider,
 } from "@workspace/ui/components/sidebar";
 
-export default function DashboardLayout({
-	children,
-}: {
-	children: React.ReactNode;
-}) {
+function DashboardContent({ children }: { children: React.ReactNode }) {
 	const router = useRouter();
-	const { data, isPending } = authClient.useSession();
-	const dispatch = useAppDispatch();
+	const { user, loading } = useAuth();
 
 	useEffect(() => {
-		if (!data && !isPending) {
+		if (!loading && !user) {
 			router.push(`${configNav.loginLink}`);
 		}
+	}, [user, loading, router]);
 
-		const user: User | null = data?.user
-			? {
-					name: data.user.name ?? "",
-					email: data.user.email ?? "",
-					image: data.user.image ?? null,
-				}
-			: null;
-
-		dispatch(
-			setSession({
-				user,
-				token: data?.session?.token ?? null,
-			}),
-		);
-	}, [data, isPending, router, dispatch]);
-
-	if (isPending) {
+	if (loading) {
 		return <div>Loading...</div>;
+	}
+
+	if (!user) {
+		return null; // Sẽ redirect trong useEffect
 	}
 
 	return (
@@ -72,4 +53,12 @@ export default function DashboardLayout({
 			</SidebarInset>
 		</SidebarProvider>
 	);
+}
+
+export default function DashboardLayout({
+	children,
+}: {
+	children: React.ReactNode;
+}) {
+	return <DashboardContent>{children}</DashboardContent>;
 }
