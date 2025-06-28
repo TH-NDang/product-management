@@ -2,7 +2,7 @@ from typing import Annotated
 from fastapi import Depends
 from sqlmodel import Session, SQLModel
 
-from api.core import database
+from core import database
 
 
 def create_db_and_tables():
