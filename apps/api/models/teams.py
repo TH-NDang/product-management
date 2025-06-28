@@ -14,10 +14,13 @@ from sqlmodel import Field, SQLModel
 # });
 
 
-class Team(SQLModel, table=True):
-    id: str = Field(default_factory=uuid.uuid4, primary_key=True)
+class TeamBase(SQLModel):
     name: str = Field(index=True)
-    description: str | None = None
+    description: str | None = Field(default=None)
+
+
+class Team(TeamBase, table=True):
+    id: str = Field(default_factory=uuid.uuid4, primary_key=True)
     owner_id: str = Field(index=True)
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)

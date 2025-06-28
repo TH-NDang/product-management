@@ -1,5 +1,5 @@
 from fastapi import Depends, HTTPException
-from api.core import config
+from core import config
 from supabase import create_client, Client
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 

@@ -1,8 +1,8 @@
-from api.models.projects import Project, ProjectPublic
+from models.projects import Project, ProjectPublic
 from fastapi import HTTPException
 from sqlmodel import Session, select
 
-from api.core import database
+from core import database
 
 
 def fetch_projects(session: Session):

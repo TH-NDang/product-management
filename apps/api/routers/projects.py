@@ -1,10 +1,10 @@
 from fastapi import APIRouter
-from api.services.projects import (
+from services.projects import (
     fetch_project_by_id,
     fetch_projects,
 )
-from api.models.projects import ProjectPublic
-from api.dependencies.database import SessionDep
+from models.projects import ProjectPublic
+from dependencies.database import SessionDep
 
 router = APIRouter(prefix="/projects", tags=["projects"])
 
