@@ -1,5 +1,6 @@
 "use client";
 
+import { configNav } from "@/lib/config";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -44,7 +45,7 @@ export function SignUpForm({
 				email,
 				password,
 				options: {
-					emailRedirectTo: `${window.location.origin}/protected`,
+					emailRedirectTo: `${window.location.origin}/${configNav.mainLink}`,
 				},
 			});
 			if (error) throw error;
@@ -66,7 +67,7 @@ export function SignUpForm({
 			const { error } = await supabase.auth.signInWithOAuth({
 				provider: "google",
 				options: {
-					redirectTo: `${window.location.origin}/auth/oauth?next=/protected`,
+					redirectTo: `${window.location.origin}/auth/oauth?next=${configNav.mainLink}`,
 				},
 			});
 

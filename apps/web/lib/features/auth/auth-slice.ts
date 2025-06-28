@@ -1,4 +1,4 @@
-import type { RootState } from "@/lib/store";
+import type { RootState } from "@/lib/redux/store";
 import type { User } from "@/lib/types";
 import { type PayloadAction, type Slice, createSlice } from "@reduxjs/toolkit";
 

@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 import { authClient } from "@/lib/auth/auth-client";
 import { setSession } from "@/lib/features/auth/auth-slice";
-import { useAppDispatch, useAppSelector } from "@/lib/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
 import type { User } from "@/lib/types";
 
 import { AppSidebar } from "@/components/app-sidebar";

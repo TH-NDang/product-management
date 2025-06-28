@@ -7,8 +7,8 @@ import {
 } from "@tabler/icons-react";
 
 import { authClient } from "@/lib/auth/auth-client";
-import { useAppSelector } from "@/lib/hooks";
-import type { RootState } from "@/lib/store";
+import { useAppSelector } from "@/lib/redux/hooks";
+import type { RootState } from "@/lib/redux/store";
 import type { User } from "@/lib/types";
 import {
 	Avatar,
