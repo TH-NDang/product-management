@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod/v4";
 
+import { Icons } from "@/components/icons";
+import Loader from "@/components/loader";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -16,8 +18,6 @@ import {
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
 import { useRouter } from "next/navigation";
-import { Icons } from "../icons";
-import Loader from "../loader";
 
 const formSchema = z.object({
 	email: z.email(),
