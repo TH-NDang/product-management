@@ -31,12 +31,15 @@ import {
 	useSidebar,
 } from "@workspace/ui/components/sidebar";
 import { Settings } from "lucide-react";
+import { useTheme } from "next-themes";
+import { ThemeSwitcher } from "../theme-switcher";
 
 export function NavUser() {
 	const { isMobile } = useSidebar();
 	const user: User | null = useAppSelector(
 		(state: RootState) => state.auth.user,
 	);
+	const { theme, setTheme } = useTheme();
 
 	return (
 		<SidebarMenu>
@@ -87,14 +90,23 @@ export function NavUser() {
 							</div>
 						</DropdownMenuLabel>
 						<DropdownMenuSeparator />
+						<DropdownMenuLabel>
+							<ThemeSwitcher
+								defaultValue="system"
+								value={theme as "light" | "dark" | "system"}
+								onChange={(newTheme) => setTheme(newTheme)}
+								className="w-full"
+							/>
+						</DropdownMenuLabel>
+						<DropdownMenuSeparator />
 						<DropdownMenuGroup>
 							<DropdownMenuItem>
-								<IconUserCircle />
-								Account
+								<IconUserCircle className="mr-2 h-4 w-4" />
+								<span>Account</span>
 							</DropdownMenuItem>
 							<DropdownMenuItem>
-								<Settings />
-								Settings
+								<Settings className="mr-2 h-4 w-4" />
+								<span>Settings</span>
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
