@@ -2,6 +2,7 @@
 
 import { AuthProvider } from "@/lib/supabase/auth-provider";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { NuqsAdapter } from "nuqs/adapters/next";
 import StoreProvider from "./store-provider";
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -14,7 +15,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
 			enableColorScheme
 		>
 			<StoreProvider>
-				<AuthProvider>{children}</AuthProvider>
+				<NuqsAdapter>
+					<AuthProvider>{children}</AuthProvider>
+				</NuqsAdapter>
 			</StoreProvider>
 		</NextThemesProvider>
 	);

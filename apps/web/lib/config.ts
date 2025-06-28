@@ -9,6 +9,22 @@ import {
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 
+// API Configuration
+export const API_CONFIG = {
+	// Backend URL - can be overridden by environment variable
+	BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000",
+	// API base path
+	// API_BASE_PATH: "/api",
+	API_BASE_PATH: "",
+} as const;
+
+// Helper function to get full API URL
+export const getApiUrl = (endpoint: string): string => {
+	const baseUrl = API_CONFIG.BACKEND_URL;
+	const apiPath = API_CONFIG.API_BASE_PATH;
+	return `${baseUrl}${apiPath}${endpoint}`;
+};
+
 export interface NavItem {
 	title: string;
 	url: string;
@@ -19,6 +35,20 @@ export interface ProjectNavItem {
 	name: string;
 	url: string;
 	icon: React.ElementType;
+}
+
+// Project type from API
+export interface Project {
+	id: string;
+	name: string;
+	description: string | null;
+	status: string;
+	start_date: string | null;
+	end_date: string | null;
+	team_id: string;
+	created_by_id: string;
+	created_at: string;
+	updated_at: string;
 }
 
 export const configNav = {
@@ -53,14 +83,8 @@ export const configNav = {
 		},
 	] as NavItem[],
 
-	// Project navigation items
-	projectNav: [
-		{
-			name: "Project 1",
-			url: "#",
-			icon: IconFolder,
-		},
-	] as ProjectNavItem[],
+	// Project navigation items - will be populated dynamically
+	projectNav: [] as ProjectNavItem[],
 };
 
 // Utility functions for navigation management
@@ -114,6 +138,15 @@ export const navUtils = {
 	addProjectItem: (item: ProjectNavItem) => {
 		configNav.projectNav.push(item);
 	},
+
+	// Convert Project to ProjectNavItem
+	projectToNavItem: (project: Project): ProjectNavItem => {
+		return {
+			name: project.name,
+			url: `/projects/${project.id}`,
+			icon: IconFolder,
+		};
+	},
 };
 
 // Custom hook for navigation
@@ -130,5 +163,6 @@ export const useNavigation = () => {
 			navUtils.isActiveUrlStartsWith(pathname, url),
 		getNavItemByUrl: (url: string, navType: "main" | "secondary" | "project") =>
 			navUtils.getNavItemByUrl(url, navType),
+		navUtils,
 	};
 };

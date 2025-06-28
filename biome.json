@@ -20,7 +20,8 @@
 			"ui",
 			"supabase",
 			"eslint-config",
-			"typescript-config"
+			"typescript-config",
+			"use-infinite-query.ts"
 		]
 	},
 	"formatter": {
