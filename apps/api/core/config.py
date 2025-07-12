@@ -7,8 +7,8 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 class Settings(BaseSettings):
     """Application settings loaded from environment variables."""
 
-    DATABASE_URL: str = Field(default="", description="Database URL")
-    JWT_SECRET_KEY: str = Field(default="", description="JWT Secret Key")
+    DATABASE_URL: str = Field(default="sqlite:///./product_management.db", description="Database URL")
+    JWT_SECRET_KEY: str = Field(default="your-secret-key-here", description="JWT Secret Key")
     ALGORITHM: str = Field(default="HS256", description="Algorithm")
     ACCESS_TOKEN_EXPIRE_MINUTES: int = Field(
         default=60, description="Access Token Expire Minutes"

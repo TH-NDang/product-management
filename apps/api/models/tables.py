@@ -19,7 +19,6 @@ class Task(TaskBase, table=True):
 
 class Project(ProjectBase, table=True):
     id: str = Field(default_factory=uuid.uuid4, primary_key=True)
-    status: str
     start_date: datetime | None = None
     end_date: datetime | None = None
     team_id: str = Field(index=True)
