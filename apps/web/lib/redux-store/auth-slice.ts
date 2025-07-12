@@ -4,6 +4,7 @@ import type { AppDispatch } from "./store";
 
 export interface AuthState {
 	token: string | null;
+	userId: string | null;
 	email: string | null;
 	isAuthenticated: boolean;
 	loading: boolean;
@@ -12,7 +13,8 @@ export interface AuthState {
 
 const initialState: AuthState = {
 	token: null,
-	email: "",
+	userId: null,
+	email: null,
 	isAuthenticated: false,
 	loading: true, // Start with loading true
 	error: null,
@@ -25,11 +27,14 @@ export const initializeAuth = () => (dispatch: AppDispatch) => {
 			typeof window !== "undefined" ? localStorage.getItem("token") : null;
 		const email =
 			typeof window !== "undefined" ? localStorage.getItem("email") : null;
-		if (token && email) {
+		const userId =
+			typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+		if (token && email && userId) {
 			dispatch(
 				loginSuccess({
 					token,
 					email,
+					userId,
 				}),
 			);
 		}
@@ -50,10 +55,11 @@ const authSlice = createSlice({
 		},
 		loginSuccess: (
 			state,
-			action: PayloadAction<{ token: string; email: string }>,
+			action: PayloadAction<{ token: string; email: string; userId: string }>,
 		) => {
 			state.token = action.payload.token;
 			state.email = action.payload.email;
+			state.userId = action.payload.userId;
 			state.isAuthenticated = true;
 			state.loading = false;
 			state.error = null;
@@ -63,6 +69,7 @@ const authSlice = createSlice({
 				try {
 					localStorage.setItem("token", action.payload.token);
 					localStorage.setItem("email", action.payload.email);
+					localStorage.setItem("userId", action.payload.userId);
 
 					const expires = new Date();
 					expires.setDate(expires.getDate() + 1); // 1 day from now
@@ -82,12 +89,14 @@ const authSlice = createSlice({
 		},
 		logout: (state) => {
 			state.token = null;
-			state.email = "";
+			state.email = null;
+			state.userId = null;
 			state.isAuthenticated = false;
 			state.loading = false;
 			state.error = null;
 			localStorage.removeItem("token");
 			localStorage.removeItem("email");
+			localStorage.removeItem("userId");
 		},
 	},
 });

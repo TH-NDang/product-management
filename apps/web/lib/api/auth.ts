@@ -18,6 +18,7 @@ interface LoginResponse {
 	status: number;
 	message: string;
 	data: {
+		userId: string;
 		email: string;
 		token: string;
 		expiresAt: number;
@@ -29,59 +30,31 @@ export const useLoginMutation = () => {
 	const dispatch = useAppDispatch();
 	return useMutation<LoginResponse, Error, LoginCredentials>({
 		mutationFn: async (credentials: LoginCredentials) => {
-			try {
-				dispatch(loginStart());
-				const response = await api.post<LoginResponse>(
-					"/api/auth/login",
-					credentials,
-				);
-
-				if (response.data.success) {
-					localStorage.setItem("token", response.data.data.token);
-					dispatch(
-						loginSuccess({
-							token: response.data.data.token,
-							email: response.data.data.email,
-						}),
-					);
-					return response.data;
-				}
-
+			const response = await api.post<LoginResponse>(
+				"/api/auth/login",
+				credentials,
+			);
+			if (!response.data.success) {
 				throw new Error(response.data.message || "Login failed");
-			} catch (error: unknown) {
-				let errorMessage = "Login failed";
-
-				if (error instanceof Error) {
-					errorMessage = error.message;
-				}
-
-				localStorage.removeItem("token");
-				dispatch(logout());
-
-				throw new Error(errorMessage);
 			}
+			return response.data;
 		},
-		onSuccess: async (response) => {
-			if (response.success && response.data) {
+		onMutate: () => {
+			dispatch(loginStart());
+		},
+		onSuccess: (data) => {
+			if (data.success && data.data) {
 				dispatch(
 					loginSuccess({
-						token: response.data.token,
-						email: response.data.email,
+						token: data.data.token,
+						email: data.data.email,
+						userId: data.data.userId,
 					}),
 				);
-
-				return response;
 			}
-			throw new Error(response.message || "Login failed");
 		},
-		onError: (error: unknown) => {
-			const errorMessage =
-				error instanceof Error ? error.message : "Login failed";
-			dispatch(loginFailure(errorMessage));
-			if (typeof window !== "undefined") {
-				const toast = require("sonner").toast;
-				toast.error(errorMessage);
-			}
+		onError: (error: Error) => {
+			dispatch(loginFailure(error.message));
 		},
 	});
 };
