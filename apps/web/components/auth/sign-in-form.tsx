@@ -58,19 +58,20 @@ export default function SignInForm({
 		try {
 			dispatch(loginStart());
 
-			loginMutation.mutate(values, {
-				onSuccess: (response) => {
-					if (response?.success) {
-						setTimeout(() => {
-							router.push(redirectTo);
-						}, 100);
-					}
-				},
-			});
+			const response = await loginMutation.mutateAsync(values);
+
+			if (response?.success) {
+				setTimeout(() => {
+					router.push(redirectTo);
+				}, 100);
+			} else {
+				throw new Error(response?.message || "Login failed");
+			}
 		} catch (error: unknown) {
 			const errorMessage =
 				error instanceof Error ? error.message : "Login failed";
 			console.error("Login error:", errorMessage);
+			toast.error(errorMessage);
 		}
 	}
 

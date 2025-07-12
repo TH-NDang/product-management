@@ -29,7 +29,10 @@ export const useSignUpMutation = () => {
 	return useMutation({
 		mutationFn: async (credentials: SignUpCredentials) => {
 			dispatch(loginStart());
-			const response = await api.post<SignUpResponse>("/signup", credentials);
+			const response = await api.post<SignUpResponse>(
+				"/api/auth/signup",
+				credentials,
+			);
 			return response.data;
 		},
 		onSuccess: (data) => {

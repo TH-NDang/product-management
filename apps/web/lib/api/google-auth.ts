@@ -24,7 +24,7 @@ export const useGoogleLogin = () => {
 			dispatch(loginStart());
 			try {
 				// This will redirect to the backend's OAuth endpoint
-				window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/auth/oauth2/authorization/google`;
+				window.location.href = `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080"}/api/auth/oauth2/authorization/google`;
 				// This will never be reached as we're redirecting
 				return null;
 			} catch (error: unknown) {

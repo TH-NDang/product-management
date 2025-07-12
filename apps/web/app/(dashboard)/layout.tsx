@@ -2,12 +2,20 @@
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
+import { initializeAuth } from "@/lib/redux-store/auth-slice";
+import { useAppDispatch } from "@/lib/redux-store/hooks";
 import {
 	SidebarInset,
 	SidebarProvider,
 } from "@workspace/ui/components/sidebar";
+import { useEffect } from "react";
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
+	const dispatch = useAppDispatch();
+
+	useEffect(() => {
+		dispatch(initializeAuth());
+	}, [dispatch]);
 	return (
 		<SidebarProvider
 			style={

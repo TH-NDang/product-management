@@ -1,4 +1,5 @@
 import { type PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { authService } from "../api/auth-service";
 import type { AppDispatch } from "./store";
 
 export interface AuthState {
@@ -13,24 +14,29 @@ const initialState: AuthState = {
 	token: null,
 	email: "",
 	isAuthenticated: false,
-	loading: false,
+	loading: true, // Start with loading true
 	error: null,
 };
 
 export const initializeAuth = () => (dispatch: AppDispatch) => {
+	dispatch(setAuthLoading(true));
 	try {
 		const token =
 			typeof window !== "undefined" ? localStorage.getItem("token") : null;
-		if (token) {
+		const email =
+			typeof window !== "undefined" ? localStorage.getItem("email") : null;
+		if (token && email) {
 			dispatch(
 				loginSuccess({
 					token,
-					email: "",
+					email,
 				}),
 			);
 		}
 	} catch (error) {
 		console.error("Error initializing auth state:", error);
+	} finally {
+		dispatch(setAuthLoading(false));
 	}
 };
 
@@ -56,6 +62,7 @@ const authSlice = createSlice({
 			if (typeof window !== "undefined") {
 				try {
 					localStorage.setItem("token", action.payload.token);
+					localStorage.setItem("email", action.payload.email);
 
 					const expires = new Date();
 					expires.setDate(expires.getDate() + 1); // 1 day from now
@@ -70,6 +77,9 @@ const authSlice = createSlice({
 			state.loading = false;
 			state.error = action.payload;
 		},
+		setAuthLoading: (state, action: PayloadAction<boolean>) => {
+			state.loading = action.payload;
+		},
 		logout: (state) => {
 			state.token = null;
 			state.email = "";
@@ -77,10 +87,16 @@ const authSlice = createSlice({
 			state.loading = false;
 			state.error = null;
 			localStorage.removeItem("token");
+			localStorage.removeItem("email");
 		},
 	},
 });
 
-export const { loginStart, loginSuccess, loginFailure, logout } =
-	authSlice.actions;
+export const {
+	loginStart,
+	loginSuccess,
+	loginFailure,
+	logout,
+	setAuthLoading,
+} = authSlice.actions;
 export default authSlice.reducer;

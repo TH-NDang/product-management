@@ -4,6 +4,7 @@ import {
 	loginFailure,
 	loginStart,
 	loginSuccess,
+	logout,
 } from "../redux-store/auth-slice";
 import { useAppDispatch } from "../redux-store/hooks";
 import { api } from "./client";
@@ -26,24 +27,36 @@ interface LoginResponse {
 
 export const useLoginMutation = () => {
 	const dispatch = useAppDispatch();
-	return useMutation({
+	return useMutation<LoginResponse, Error, LoginCredentials>({
 		mutationFn: async (credentials: LoginCredentials) => {
 			try {
 				dispatch(loginStart());
 				const response = await api.post<LoginResponse>(
-					"/auth/login",
+					"/api/auth/login",
 					credentials,
 				);
 
-				return response.data;
+				if (response.data.success) {
+					localStorage.setItem("token", response.data.data.token);
+					dispatch(
+						loginSuccess({
+							token: response.data.data.token,
+							email: response.data.data.email,
+						}),
+					);
+					return response.data;
+				}
+
+				throw new Error(response.data.message || "Login failed");
 			} catch (error: unknown) {
 				let errorMessage = "Login failed";
 
-				if (error instanceof AxiosError) {
-					errorMessage = error.response?.data?.message || "Login failed";
-				} else if (error instanceof Error) {
+				if (error instanceof Error) {
 					errorMessage = error.message;
 				}
+
+				localStorage.removeItem("token");
+				dispatch(logout());
 
 				throw new Error(errorMessage);
 			}

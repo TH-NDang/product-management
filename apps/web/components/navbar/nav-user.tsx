@@ -28,6 +28,7 @@ import {
 	SidebarMenuItem,
 	useSidebar,
 } from "@workspace/ui/components/sidebar";
+import { Skeleton } from "@workspace/ui/components/skeleton";
 import { Settings } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
@@ -46,9 +47,11 @@ export function NavUser() {
 	const router = useRouter();
 	const { theme, setTheme } = useTheme();
 
+	const { email, loading } = useAppSelector((state) => state.auth);
+
 	const user: UserInfo = {
-		email: useAppSelector((state) => state.auth.email),
-		name: useAppSelector((state) => state.auth.email?.split("@")[0] || "User"),
+		email: email,
+		name: email?.split("@")[0] || "User",
 	};
 
 	const handleLogout = async () => {
@@ -64,6 +67,18 @@ export function NavUser() {
 			toast.error("Failed to log out");
 		}
 	};
+
+	if (loading) {
+		return (
+			<div className="flex items-center gap-3 px-2">
+				<Skeleton className="h-8 w-8 rounded-lg" />
+				<div className="hidden flex-col items-start gap-1 text-sm lg:flex">
+					<Skeleton className="h-4 w-20" />
+					<Skeleton className="h-3 w-28" />
+				</div>
+			</div>
+		);
+	}
 
 	return (
 		<SidebarMenu>
