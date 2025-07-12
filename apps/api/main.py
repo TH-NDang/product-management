@@ -4,8 +4,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
 from routers import status, projects, user
-from dependencies.database import create_db_and_tables
+from core.database import create_db_and_tables
 from seed_data import seed_projects
+
 
 @asynccontextmanager
 async def lifespan(__app: FastAPI):

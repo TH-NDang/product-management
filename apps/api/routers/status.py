@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 from core.config import Settings
-from dependencies.configs import get_settings
+from core.config import get_settings
 
 router = APIRouter()
 
@@ -10,6 +10,7 @@ class StatusResponse(BaseModel):
     server: str
     database: str
     supabase: str
+
 
 @router.get(
     "/status",
