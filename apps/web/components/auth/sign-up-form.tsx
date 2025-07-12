@@ -1,160 +1,197 @@
-"use client";
+import { useGoogleLogin } from "@/lib/api/google-auth";
+import { useSignUpMutation } from "@/lib/api/signup";
+import { authClient } from "@/lib/auth/auth-client";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { ArrowRight, LogIn } from "lucide-react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import z from "zod/v4";
 
-import { configNav } from "@/lib/config";
-import { createClient } from "@/lib/supabase/client";
+import { Icons } from "@/components/icons";
+import Loader from "@/components/loader";
+import { loginStart } from "@/lib/redux-store/auth-slice";
+import { useAppDispatch } from "@/lib/redux-store/hooks";
 import { Button } from "@workspace/ui/components/button";
 import {
-	Card,
-	CardContent,
-	CardDescription,
-	CardHeader,
-	CardTitle,
-} from "@workspace/ui/components/card";
+	Form,
+	FormControl,
+	FormField,
+	FormItem,
+	FormLabel,
+	FormMessage,
+} from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
-import { Label } from "@workspace/ui/components/label";
-import { cn } from "@workspace/ui/lib/utils";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 
-export function SignUpForm({
-	className,
-	...props
-}: React.ComponentPropsWithoutRef<"div">) {
-	const [email, setEmail] = useState("");
-	const [password, setPassword] = useState("");
-	const [repeatPassword, setRepeatPassword] = useState("");
-	const [error, setError] = useState<string | null>(null);
-	const [isLoading, setIsLoading] = useState(false);
+const formSchema = z.object({
+	name: z.string().min(2, {
+		message: "Name must be at least 2 characters.",
+	}),
+	email: z.email({
+		message: "Please enter a valid email address.",
+	}),
+	password: z.string().min(8, {
+		message: "Password must be at least 8 characters.",
+	}),
+});
+
+export default function SignUpForm({
+	onSwitchToSignIn,
+}: {
+	onSwitchToSignIn: () => void;
+}) {
 	const router = useRouter();
+	const dispatch = useAppDispatch();
+	const { mutate: googleLogin } = useGoogleLogin();
+	const { mutate: signUp } = useSignUpMutation();
 
-	const handleSignUp = async (e: React.FormEvent) => {
-		e.preventDefault();
-		const supabase = createClient();
-		setIsLoading(true);
-		setError(null);
+	const form = useForm<z.infer<typeof formSchema>>({
+		resolver: zodResolver(formSchema),
+		defaultValues: {
+			name: "",
+			email: "",
+			password: "",
+		},
+	});
 
-		if (password !== repeatPassword) {
-			setError("Passwords do not match");
-			setIsLoading(false);
-			return;
-		}
-
+	async function onSubmit(values: z.infer<typeof formSchema>) {
+		dispatch(loginStart());
 		try {
-			const { error } = await supabase.auth.signUp({
-				email,
-				password,
-				options: {
-					emailRedirectTo: `${window.location.origin}/${configNav.mainLink}`,
+			signUp(values, {
+				onSuccess: () => {
+					router.push("/");
+				},
+				onError: (err: unknown) => {
+					const error =
+						err instanceof Error ? err : new Error("An unknown error occurred");
+					throw error;
 				},
 			});
-			if (error) throw error;
-			router.push("/auth/sign-up-success");
-		} catch (error: unknown) {
-			setError(error instanceof Error ? error.message : "An error occurred");
-		} finally {
-			setIsLoading(false);
+		} catch (err: unknown) {
+			const errorMessage = err instanceof Error ? err.message : "Signup failed";
+			toast.error(errorMessage);
 		}
-	};
+	}
 
-	const handleGoogleSignUp = async (e: React.FormEvent) => {
-		e.preventDefault();
-		const supabase = createClient();
-		setIsLoading(true);
-		setError(null);
-
+	async function handleGoogleSignIn() {
 		try {
-			const { error } = await supabase.auth.signInWithOAuth({
-				provider: "google",
-				options: {
-					redirectTo: `${window.location.origin}/auth/oauth?next=${configNav.mainLink}`,
-				},
-			});
-
-			if (error) throw error;
+			googleLogin();
 		} catch (error: unknown) {
-			setError(error instanceof Error ? error.message : "An error occurred");
-			setIsLoading(false);
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: "Failed to sign in with Google";
+			toast.error(errorMessage);
 		}
-	};
+	}
 
 	return (
-		<div className={cn("flex flex-col gap-6", className)} {...props}>
-			<Card>
-				<CardHeader>
-					<CardTitle className="text-2xl">Sign up</CardTitle>
-					<CardDescription>Create a new account</CardDescription>
-				</CardHeader>
-				<CardContent>
+		<div className="flex items-center justify-center py-4">
+			<div className="w-full max-w-md">
+				<div className="rounded-lg border bg-card p-6 shadow-sm">
+					<div className="mb-6 flex flex-col items-center space-y-2 text-center">
+						<div className="rounded-full bg-primary/10 p-3">
+							<LogIn className="h-6 w-6 text-primary" />
+						</div>
+						<h1 className="font-semibold text-2xl tracking-tight">
+							Create Account
+						</h1>
+						<p className="text-muted-foreground text-sm">
+							Enter your details below to create your account.
+						</p>
+					</div>
+
 					<div className="mb-6 flex flex-col gap-4">
 						<Button
 							variant="outline"
-							type="button"
-							onClick={handleGoogleSignUp}
+							onClick={handleGoogleSignIn}
 							className="w-full"
-							disabled={isLoading}
 						>
-							<svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-								<title>Google Icon</title>
-								<path
-									fill="currentColor"
-									d="M21.805 10.023h-9.765v3.977h5.617c-.242 1.242-1.453 3.648-5.617 3.648-3.383 0-6.148-2.797-6.148-6.148s2.765-6.148 6.148-6.148c1.922 0 3.211.82 3.953 1.523l2.703-2.648c-1.703-1.57-3.898-2.523-6.656-2.523-5.523 0-10 4.477-10 10s4.477 10 10 10c5.742 0 9.547-4.023 9.547-9.695 0-.648-.07-1.148-.156-1.684z"
-								/>
-							</svg>
+							<Icons.google className="mr-2 h-4 w-4" />
 							Sign up with Google
 						</Button>
 					</div>
-					<form onSubmit={handleSignUp}>
-						<div className="flex flex-col gap-6">
-							<div className="grid gap-2">
-								<Label htmlFor="email">Email</Label>
-								<Input
-									id="email"
-									type="email"
-									placeholder="m@example.com"
-									required
-									value={email}
-									onChange={(e) => setEmail(e.target.value)}
-								/>
-							</div>
-							<div className="grid gap-2">
-								<div className="flex items-center">
-									<Label htmlFor="password">Password</Label>
+
+					<div className="relative mb-6">
+						<div className="absolute inset-0 flex items-center">
+							<span className="w-full border-t" />
+						</div>
+						<div className="relative flex justify-center text-xs uppercase">
+							<span className="bg-background px-2 text-muted-foreground">
+								Or continue with
+							</span>
+						</div>
+					</div>
+
+					<Form {...form}>
+						<form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+							<FormField
+								control={form.control}
+								name="name"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Name</FormLabel>
+										<FormControl>
+											<Input {...field} placeholder="Enter your name" />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="email"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Email</FormLabel>
+										<FormControl>
+											<Input {...field} placeholder="Enter your email" />
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<FormField
+								control={form.control}
+								name="password"
+								render={({ field }) => (
+									<FormItem>
+										<FormLabel>Password</FormLabel>
+										<FormControl>
+											<Input
+												{...field}
+												type="password"
+												placeholder="Enter your password"
+											/>
+										</FormControl>
+										<FormMessage />
+									</FormItem>
+								)}
+							/>
+
+							<Button type="submit" className="w-full">
+								<div className="flex items-center justify-center gap-2">
+									Create Account
+									<ArrowRight className="h-4 w-4" />
 								</div>
-								<Input
-									id="password"
-									type="password"
-									required
-									value={password}
-									onChange={(e) => setPassword(e.target.value)}
-								/>
-							</div>
-							<div className="grid gap-2">
-								<div className="flex items-center">
-									<Label htmlFor="repeat-password">Repeat Password</Label>
-								</div>
-								<Input
-									id="repeat-password"
-									type="password"
-									required
-									value={repeatPassword}
-									onChange={(e) => setRepeatPassword(e.target.value)}
-								/>
-							</div>
-							{error && <p className="text-red-500 text-sm">{error}</p>}
-							<Button type="submit" className="w-full" disabled={isLoading}>
-								{isLoading ? "Creating an account..." : "Sign up"}
 							</Button>
-						</div>
-						<div className="mt-4 text-center text-sm">
-							Already have an account?{" "}
-							<Link href="/auth/login" className="underline underline-offset-4">
-								Login
-							</Link>
-						</div>
-					</form>
-				</CardContent>
-			</Card>
+						</form>
+					</Form>
+
+					<div className="mt-6 flex items-center justify-center text-sm">
+						Already have an account?{" "}
+						<Button
+							variant="link"
+							onClick={onSwitchToSignIn}
+							className="text-primary hover:text-primary/90"
+						>
+							Sign in
+						</Button>
+					</div>
+				</div>
+			</div>
 		</div>
 	);
 }

@@ -4,12 +4,12 @@ import {
 	projectsApi,
 } from "@/lib/api/projects";
 import type { Project } from "@/lib/config";
-import { useAppDispatch } from "@/lib/redux/hooks";
+import { useAppDispatch } from "@/lib/redux-store/hooks";
 import {
 	addProject,
 	removeProject,
 	updateProject,
-} from "@/lib/redux/projects-slice";
+} from "@/lib/redux-store/projects-slice";
 import {
 	useInfiniteQuery,
 	useMutation,

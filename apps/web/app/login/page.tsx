@@ -1,6 +1,6 @@
 "use client";
 
-import { SignInForm, SignUpForm } from "@/components/deprecated/auth";
+import { SignInForm, SignUpForm } from "@/components/auth";
 import { useState } from "react";
 
 export default function LoginPage() {

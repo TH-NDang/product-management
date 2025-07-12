@@ -1,9 +1,4 @@
 "use client";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-
-import { configNav } from "@/lib/config";
-import { useAuth } from "@/lib/supabase/auth-provider";
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
@@ -13,23 +8,6 @@ import {
 } from "@workspace/ui/components/sidebar";
 
 function DashboardContent({ children }: { children: React.ReactNode }) {
-	const router = useRouter();
-	const { user, loading } = useAuth();
-
-	useEffect(() => {
-		if (!loading && !user) {
-			router.push(`${configNav.loginLink}`);
-		}
-	}, [user, loading, router]);
-
-	if (loading) {
-		return <div>Loading...</div>;
-	}
-
-	if (!user) {
-		return null; // Sẽ redirect trong useEffect
-	}
-
 	return (
 		<SidebarProvider
 			style={

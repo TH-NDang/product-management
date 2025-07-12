@@ -1,4 +1,4 @@
-import { useAppDispatch, useAppSelector } from "@/lib/redux/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux-store/hooks";
 import {
 	selectAllProjects,
 	selectFilteredProjects,
@@ -8,15 +8,15 @@ import {
 	selectProjectsFilters,
 	selectProjectsStats,
 	selectSelectedProject,
-} from "@/lib/redux/projects-selectors";
+} from "@/lib/redux-store/projects-selectors";
 import {
 	clearFilters,
 	setError,
 	setFilters,
 	setLoading,
 	setSelectedProject,
-} from "@/lib/redux/projects-slice";
-import type { AppDispatch, RootState } from "@/lib/redux/store";
+} from "@/lib/redux-store/projects-slice";
+import type { AppDispatch, RootState } from "@/lib/redux-store/store";
 
 // Project hooks
 export const useProjects = () => {

@@ -1,11 +1,11 @@
-import { authClient } from "@/lib/auth/auth-client";
-import { ArrowRight, LogIn } from "lucide-react";
+import { useLoginMutation } from "@/lib/api/auth";
+import { useGoogleLogin } from "@/lib/api/google-auth";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod/v4";
 
-import { Icons } from "@/components/icons";
-import Loader from "@/components/loader";
+import { loginStart } from "@/lib/redux-store/auth-slice";
+import { useAppDispatch, useAppSelector } from "@/lib/redux-store/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -17,7 +17,10 @@ import {
 	FormMessage,
 } from "@workspace/ui/components/form";
 import { Input } from "@workspace/ui/components/input";
-import { useRouter } from "next/navigation";
+import { ArrowRight, LogIn } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Icons } from "../icons";
+import Loader from "../loader";
 
 const formSchema = z.object({
 	email: z.email(),
@@ -30,7 +33,15 @@ export default function SignInForm({
 	onSwitchToSignUp: () => void;
 }) {
 	const router = useRouter();
-	const { isPending } = authClient.useSession();
+	const searchParams = useSearchParams();
+	const dispatch = useAppDispatch();
+	const { isAuthenticated, loading, error } = useAppSelector(
+		(state) => state.auth,
+	);
+	const loginMutation = useLoginMutation();
+	const { mutate: googleLogin } = useGoogleLogin();
+
+	const redirectTo = searchParams.get("from") || "/";
 
 	const form = useForm<z.infer<typeof formSchema>>({
 		resolver: zodResolver(formSchema),
@@ -41,36 +52,59 @@ export default function SignInForm({
 	});
 
 	async function onSubmit(values: z.infer<typeof formSchema>) {
-		await authClient.signIn.email(
-			{
-				email: values.email,
-				password: values.password,
-			},
-			{
-				onSuccess: () => {
-					router.push("/");
-					toast.success("Sign in successful");
+		// Reset any previous errors
+		form.clearErrors();
+
+		try {
+			dispatch(loginStart());
+
+			loginMutation.mutate(values, {
+				onSuccess: (response) => {
+					if (response?.success) {
+						setTimeout(() => {
+							router.push(redirectTo);
+						}, 100);
+					}
 				},
-				onError: (error) => {
-					toast.error(`Error: ${error.error.message}`);
-				},
-			},
-		);
+			});
+		} catch (error: unknown) {
+			const errorMessage =
+				error instanceof Error ? error.message : "Login failed";
+			console.error("Login error:", errorMessage);
+		}
 	}
 
 	async function handleGoogleSignIn() {
 		try {
-			await authClient.signIn.social({
-				provider: "google",
-				callbackURL: window.location.origin,
-			});
-		} catch (error) {
-			toast.error("Failed to sign in with Google");
+			googleLogin();
+		} catch (error: unknown) {
+			const errorMessage =
+				error instanceof Error
+					? error.message
+					: "Failed to sign in with Google";
+			toast.error(errorMessage);
 		}
 	}
 
-	if (isPending) {
-		return <Loader />;
+	if (loading) {
+		return (
+			<div className="flex items-center justify-center py-4">
+				<div className="w-full max-w-md">
+					<div className="rounded-lg border bg-card p-6 shadow-sm">
+						<div className="flex items-center justify-center">
+							<Loader />
+						</div>
+						<p className="mt-4 text-center text-muted-foreground text-sm">
+							Signing in...
+						</p>
+					</div>
+				</div>
+			</div>
+		);
+	}
+
+	if (error) {
+		toast.error(error);
 	}
 
 	return (
@@ -95,8 +129,8 @@ export default function SignInForm({
 							onClick={handleGoogleSignIn}
 							className="w-full"
 						>
-							<Icons.google className="mr-2" />
-							Continue with Google
+							<Icons.google className="mr-2 h-4 w-4" />
+							Sign in with Google
 						</Button>
 					</div>
 

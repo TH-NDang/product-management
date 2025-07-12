@@ -6,10 +6,8 @@ import {
 	IconUserCircle,
 } from "@tabler/icons-react";
 
-import { authClient } from "@/lib/auth/auth-client";
-import { useAppSelector } from "@/lib/redux/hooks";
-import type { RootState } from "@/lib/redux/store";
-import type { User } from "@/lib/types";
+import { logout } from "@/lib/redux-store/auth-slice";
+import { useAppDispatch, useAppSelector } from "@/lib/redux-store/hooks";
 import {
 	Avatar,
 	AvatarFallback,
@@ -32,14 +30,40 @@ import {
 } from "@workspace/ui/components/sidebar";
 import { Settings } from "lucide-react";
 import { useTheme } from "next-themes";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { ThemeSwitcher } from "../theme-switcher";
+
+interface UserInfo {
+	email: string | null;
+	name?: string;
+	image?: string;
+}
 
 export function NavUser() {
 	const { isMobile } = useSidebar();
-	const user: User | null = useAppSelector(
-		(state: RootState) => state.auth.user,
-	);
+	const dispatch = useAppDispatch();
+	const router = useRouter();
 	const { theme, setTheme } = useTheme();
+
+	const user: UserInfo = {
+		email: useAppSelector((state) => state.auth.email),
+		name: useAppSelector((state) => state.auth.email?.split("@")[0] || "User"),
+	};
+
+	const handleLogout = async () => {
+		try {
+			dispatch(logout());
+
+			document.cookie =
+				"token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;";
+
+			router.push("/login");
+		} catch (error) {
+			console.error("Logout error:", error);
+			toast.error("Failed to log out");
+		}
+	};
 
 	return (
 		<SidebarMenu>
@@ -50,17 +74,17 @@ export function NavUser() {
 							size="lg"
 							className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
 						>
-							<Avatar className="h-8 w-8 rounded-lg grayscale">
-								<AvatarImage
-									src={user?.image || undefined}
-									alt={user?.name || ""}
-								/>
-								<AvatarFallback className="rounded-lg">CN</AvatarFallback>
+							<Avatar className="h-8 w-8 rounded-lg">
+								<AvatarFallback className="rounded-lg bg-primary/10 text-primary">
+									{user?.email?.charAt(0).toUpperCase() || "U"}
+								</AvatarFallback>
 							</Avatar>
 							<div className="grid flex-1 text-left text-sm leading-tight">
-								<span className="truncate font-medium">{user?.name || ""}</span>
+								<span className="truncate font-medium">
+									{user?.name || "User"}
+								</span>
 								<span className="truncate text-muted-foreground text-xs">
-									{user?.email}
+									{user?.email || "No email"}
 								</span>
 							</div>
 							<IconDotsVertical className="ml-auto size-4" />
@@ -75,16 +99,16 @@ export function NavUser() {
 						<DropdownMenuLabel className="p-0 font-normal">
 							<div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
 								<Avatar className="h-8 w-8 rounded-lg">
-									<AvatarImage
-										src={user?.image || undefined}
-										alt={user?.name || ""}
-									/>
-									<AvatarFallback className="rounded-lg">CN</AvatarFallback>
+									<AvatarFallback className="rounded-lg bg-primary/10 text-primary">
+										{user?.email?.charAt(0).toUpperCase() || "U"}
+									</AvatarFallback>
 								</Avatar>
 								<div className="grid flex-1 text-left text-sm leading-tight">
-									<span className="truncate font-medium">{user?.name}</span>
+									<span className="truncate font-medium">
+										{user?.name || "User"}
+									</span>
 									<span className="truncate text-muted-foreground text-xs">
-										{user?.email}
+										{user?.email || "No email"}
 									</span>
 								</div>
 							</div>
@@ -110,9 +134,12 @@ export function NavUser() {
 							</DropdownMenuItem>
 						</DropdownMenuGroup>
 						<DropdownMenuSeparator />
-						<DropdownMenuItem onClick={() => authClient.signOut()}>
-							<IconLogout />
-							Log out
+						<DropdownMenuItem
+							onClick={handleLogout}
+							className="cursor-pointer text-destructive focus:text-destructive"
+						>
+							<IconLogout className="mr-2 h-4 w-4" />
+							<span>Log out</span>
 						</DropdownMenuItem>
 					</DropdownMenuContent>
 				</DropdownMenu>

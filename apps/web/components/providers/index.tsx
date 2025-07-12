@@ -1,6 +1,5 @@
 "use client";
 
-import { AuthProvider } from "@/lib/supabase/auth-provider";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { NuqsAdapter } from "nuqs/adapters/next";
 import ReactQueryProviders from "./query-provider";
@@ -17,9 +16,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
 		>
 			<StoreProvider>
 				<ReactQueryProviders>
-					<NuqsAdapter>
-						<AuthProvider>{children}</AuthProvider>
-					</NuqsAdapter>
+					<NuqsAdapter>{children}</NuqsAdapter>
 				</ReactQueryProviders>
 			</StoreProvider>
 		</NextThemesProvider>
