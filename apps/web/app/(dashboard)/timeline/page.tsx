@@ -1,26 +1,26 @@
 "use client";
 
-import BigCalendar from "@/components/calendar/big-calendar";
+import { CalendarMain } from "@/components/calendar/calendar-main";
 import GanttExample from "@/components/gantt/example";
 import KanbanExample from "@/components/kanban/example";
-import { useTimelineContext } from "./layout";
+import { TimelineTabs } from "@/components/timeline/timeline-tabs";
+import { BoxIcon, CalendarIcon, ChartLine } from "lucide-react";
+
+const tabs = [
+	{
+		value: "calendar",
+		label: "Calendar",
+		icon: CalendarIcon,
+		content: <CalendarMain />,
+	},
+	{
+		value: "gantt",
+		label: "Gantt",
+		icon: ChartLine,
+		content: <GanttExample />,
+	},
+];
 
 export default function Page() {
-	const { tab } = useTimelineContext();
-
-	return (
-		<div className="flex h-full flex-1 flex-col gap-4 p-2 pt-0">
-			{tab === "calendar" && <BigCalendar />}
-			{tab === "gantt" && (
-				<div className="h-full min-h-[600px] w-full">
-					<GanttExample />
-				</div>
-			)}
-			{tab === "kanban" && (
-				<div className="h-full min-h-[600px] w-full">
-					<KanbanExample />
-				</div>
-			)}
-		</div>
-	);
+	return <TimelineTabs tabs={tabs} />;
 }
