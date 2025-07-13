@@ -1,6 +1,7 @@
 "use client";
 
 import { useCreateProject } from "@/hooks/use-projects-query";
+import type { CreateProjectData } from "@/lib/api/projects";
 import { Button } from "@workspace/ui/components/button";
 import {
 	Dialog,
@@ -19,14 +20,22 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 interface AddProjectModalProps {
+	teamId: string;
 	onProjectCreated?: () => void;
 }
 
-export function AddProjectModal({ onProjectCreated }: AddProjectModalProps) {
+export function AddProjectModal({
+	teamId,
+	onProjectCreated,
+}: AddProjectModalProps) {
 	const [open, setOpen] = useState(false);
 	const [name, setName] = useState("");
 	const [description, setDescription] = useState("");
-	const createMutation = useCreateProject();
+	const [startDate, setStartDate] = useState(
+		new Date().toISOString().split("T")[0],
+	);
+	const [endDate, setEndDate] = useState("");
+	const createMutation = useCreateProject(teamId);
 
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
@@ -39,13 +48,16 @@ export function AddProjectModal({ onProjectCreated }: AddProjectModalProps) {
 		try {
 			await createMutation.mutateAsync({
 				name: name.trim(),
-				description: description.trim() || undefined,
+				...(startDate && { startDate: new Date(startDate).toISOString() }),
+				...(description && { description }),
+				...(endDate && { endDate: new Date(endDate).toISOString() }),
 			});
 
-			toast.success("Project created successfully!");
 			setOpen(false);
 			setName("");
 			setDescription("");
+			setStartDate(new Date().toISOString().split("T")[0]);
+			setEndDate("");
 			onProjectCreated?.();
 		} catch (error) {
 			toast.error("Failed to create project");
@@ -53,11 +65,16 @@ export function AddProjectModal({ onProjectCreated }: AddProjectModalProps) {
 	};
 
 	const handleOpenChange = (newOpen: boolean) => {
-		if (!newOpen && !createMutation.isPending) {
+		if (!newOpen) {
 			setOpen(false);
-			setName("");
-			setDescription("");
-		} else if (newOpen) {
+			// Reset form only when closing
+			if (!createMutation.isPending) {
+				setName("");
+				setDescription("");
+				setStartDate(new Date().toISOString().split("T")[0]);
+				setEndDate("");
+			}
+		} else {
 			setOpen(true);
 		}
 	};
@@ -105,6 +122,32 @@ export function AddProjectModal({ onProjectCreated }: AddProjectModalProps) {
 								className="col-span-3"
 								disabled={createMutation.isPending}
 								rows={3}
+							/>
+						</div>
+						<div className="grid grid-cols-4 items-center gap-4">
+							<Label htmlFor="startDate" className="text-right">
+								Start Date
+							</Label>
+							<Input
+								id="startDate"
+								type="date"
+								value={startDate}
+								onChange={(e) => setStartDate(e.target.value)}
+								className="col-span-3"
+								disabled={createMutation.isPending}
+							/>
+						</div>
+						<div className="grid grid-cols-4 items-center gap-4">
+							<Label htmlFor="endDate" className="text-right">
+								End Date
+							</Label>
+							<Input
+								id="endDate"
+								type="date"
+								value={endDate}
+								onChange={(e) => setEndDate(e.target.value)}
+								className="col-span-3"
+								disabled={createMutation.isPending}
 							/>
 						</div>
 					</div>

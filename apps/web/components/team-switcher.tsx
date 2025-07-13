@@ -4,7 +4,8 @@ import { Building2, ChevronsUpDown, Plus } from "lucide-react";
 import * as React from "react";
 
 import { type Team, createDefaultTeam, useGetTeamsQuery } from "@/lib/api/team";
-import { useAppSelector } from "@/lib/redux-store/hooks";
+import { useAppDispatch, useAppSelector } from "@/lib/redux-store/hooks";
+import { setActiveTeam, setTeams } from "@/lib/redux-store/team-slice";
 import { useQueryClient } from "@tanstack/react-query";
 import {
 	DropdownMenu,
@@ -32,13 +33,20 @@ export function TeamSwitcher({
 	const { isMobile } = useSidebar();
 	const [isCreateTeamOpen, setCreateTeamOpen] = React.useState(false);
 
+	const dispatch = useAppDispatch();
 	const userId = useAppSelector((state) => state.auth.userId);
+	const { activeTeamId, teams } = useAppSelector((state) => state.team);
 	const queryClient = useQueryClient();
-	const { data: teams = [], isLoading, isError } = useGetTeamsQuery(userId);
+	const { data: teamsFromApi, isLoading, isError } = useGetTeamsQuery(userId);
 
-	// Effect để tự động tạo team mặc định nếu người dùng chưa có team
 	React.useEffect(() => {
-		if (!isLoading && !isError && userId && teams.length === 0) {
+		if (teamsFromApi) {
+			dispatch(setTeams(teamsFromApi));
+		}
+	}, [teamsFromApi, dispatch]);
+
+	React.useEffect(() => {
+		if (!isLoading && !isError && userId && teamsFromApi?.length === 0) {
 			const createTeam = async () => {
 				try {
 					const newTeam = await createDefaultTeam(userId, {
@@ -47,32 +55,25 @@ export function TeamSwitcher({
 					});
 
 					await queryClient.invalidateQueries({ queryKey: ["teams", userId] });
-					toast.success(`Team "${newTeam.name}" created successfully!`);
 				} catch (error) {
 					if (error instanceof AxiosError && error.response?.status === 409) {
 						await queryClient.invalidateQueries({
 							queryKey: ["teams", userId],
 						});
 					} else {
-						console.error("Failed to create default team:", error);
-						toast.error("Could not create a default team.");
+						toast.error("Failed to create default team.");
 					}
 				}
 			};
 
 			createTeam();
 		}
-	}, [isLoading, isError, userId, teams, queryClient]);
+	}, [isLoading, isError, userId, teamsFromApi, queryClient]);
 
-	const [activeTeam, setActiveTeam] = React.useState<Team | undefined>(
-		undefined,
+	const activeTeam = React.useMemo(
+		() => teams.find((team) => team.id === activeTeamId),
+		[teams, activeTeamId],
 	);
-
-	React.useEffect(() => {
-		if (teams && teams.length > 0) {
-			setActiveTeam(teams[0]);
-		}
-	}, [teams]);
 
 	if (isLoading) {
 		return (
@@ -133,7 +134,7 @@ export function TeamSwitcher({
 							{teams.map((team) => (
 								<DropdownMenuItem
 									key={team.id}
-									onSelect={() => setActiveTeam(team)}
+									onSelect={() => dispatch(setActiveTeam(team.id))}
 									className={activeTeam?.id === team.id ? "bg-accent" : ""}
 								>
 									<Building2 className="mr-2 size-4" />

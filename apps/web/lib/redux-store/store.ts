@@ -5,12 +5,14 @@ import {
 } from "@reduxjs/toolkit";
 import authReducer from "./auth-slice";
 import projectsReducer from "./projects-slice";
+import teamReducer from "./team-slice";
 
 export const makeStore = () => {
 	return configureStore({
 		reducer: {
 			auth: authReducer,
 			projects: projectsReducer,
+			team: teamReducer,
 		},
 	});
 };

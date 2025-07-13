@@ -13,6 +13,7 @@ import {
 	useProjectsWithRedux,
 } from "@/hooks/use-projects-query";
 import { type Project, useNavigation } from "@/lib/config";
+import { useAppSelector } from "@/lib/redux-store/hooks";
 import {
 	AlertDialog,
 	AlertDialogAction,
@@ -61,42 +62,29 @@ export function NavProjects() {
 		name: string;
 	} | null>(null);
 
-	// Use React Query with Redux integration
+	const activeTeamId = useAppSelector((state) => state.team.activeTeamId);
+
 	const {
-		data: projectsData,
+		data: projects = [],
 		isLoading,
 		isFetching,
-		hasNextPage,
-		fetchNextPage,
 		error,
-	} = useProjectsWithRedux(10);
+	} = useProjectsWithRedux(activeTeamId || "");
 
-	// Use delete mutation
-	const deleteMutation = useDeleteProject();
+	// Use delete mutation for the active team
+	const deleteMutation = useDeleteProject(activeTeamId || "");
 
-	// Extract all projects from infinite query
-	const projects = projectsData?.pages.flat() || [];
-
-	// Convert projects to nav items
-	const projectNavItems = projects.map((project) =>
+	const projectNavItems = projects.map((project: Project) =>
 		navUtils.projectToNavItem(project),
 	);
 
-	// Load more projects when scrolling
-	useEffect(() => {
-		if (hasNextPage && !isFetching) {
-			fetchNextPage();
-		}
-	}, [hasNextPage, isFetching, fetchNextPage]);
-
-	// Handle project deletion
 	const handleDeleteProject = async (
 		projectId: string,
 		projectName: string,
 	) => {
 		setDeletingProjectId(projectId);
-		setOpenDropdownId(null); // Close dropdown after delete
-		setShowDeleteDialog(null); // Close dialog
+		setOpenDropdownId(null);
+		setShowDeleteDialog(null);
 
 		try {
 			await deleteMutation.mutateAsync(projectId);
@@ -108,13 +96,10 @@ export function NavProjects() {
 		}
 	};
 
-	// Handle project creation
 	const handleProjectCreated = () => {
-		// React Query will automatically refetch the data
 		toast.success("Project created successfully!");
 	};
 
-	// Handle delete button click
 	const handleDeleteClick = (projectId: string, projectName: string) => {
 		setShowDeleteDialog({ id: projectId, name: projectName });
 		setOpenDropdownId(null); // Close dropdown
@@ -125,7 +110,12 @@ export function NavProjects() {
 			<SidebarGroup className="group-data-[collapsible=icon]:hidden">
 				<SidebarGroupLabel>Projects</SidebarGroupLabel>
 				<SidebarGroupAction title="Add Project">
-					<AddProjectModal onProjectCreated={handleProjectCreated} />
+					{activeTeamId && (
+						<AddProjectModal
+							teamId={activeTeamId}
+							onProjectCreated={handleProjectCreated}
+						/>
+					)}
 				</SidebarGroupAction>
 				<SidebarGroupContent>
 					<ScrollArea className="h-[300px] w-full">
@@ -143,6 +133,12 @@ export function NavProjects() {
 										<span>Error loading projects</span>
 									</SidebarMenuButton>
 								</SidebarMenuItem>
+							) : !activeTeamId ? (
+								<SidebarMenuItem>
+									<SidebarMenuButton className="text-sidebar-foreground/70">
+										<span>Select a team to see projects</span>
+									</SidebarMenuButton>
+								</SidebarMenuItem>
 							) : projectNavItems.length === 0 ? (
 								<SidebarMenuItem>
 									<SidebarMenuButton className="text-sidebar-foreground/70">
@@ -153,7 +149,7 @@ export function NavProjects() {
 								projectNavItems.map((item) => {
 									const active = isActive(item.url);
 									const project = projects.find(
-										(p) => `/projects/${p.id}` === item.url,
+										(p: Project) => `/projects/${p.id}` === item.url,
 									);
 									const isDropdownOpen = openDropdownId === project?.id;
 
@@ -189,12 +185,6 @@ export function NavProjects() {
 													side={isMobile ? "bottom" : "right"}
 													align={isMobile ? "end" : "start"}
 												>
-													<DropdownMenuItem asChild>
-														<Link href={item.url}>
-															<IconFolder />
-															<span>Open</span>
-														</Link>
-													</DropdownMenuItem>
 													<DropdownMenuItem>
 														<IconShare3 />
 														<span>Share</span>
@@ -208,7 +198,7 @@ export function NavProjects() {
 														}
 														onClick={() =>
 															project &&
-															handleDeleteClick(project.id, item.name)
+															handleDeleteClick(project.id, project.name)
 														}
 													>
 														{deleteMutation.isPending &&
@@ -225,11 +215,11 @@ export function NavProjects() {
 									);
 								})
 							)}
-							{isFetching && hasNextPage && (
+							{isFetching && (
 								<SidebarMenuItem>
 									<SidebarMenuButton className="text-sidebar-foreground/70">
 										<Loader2 className="h-4 w-4 animate-spin" />
-										<span>Loading more...</span>
+										<span>Refreshing...</span>
 									</SidebarMenuButton>
 								</SidebarMenuItem>
 							)}

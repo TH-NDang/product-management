@@ -9,22 +9,6 @@ import {
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 
-// API Configuration
-export const API_CONFIG = {
-	// Backend URL - can be overridden by environment variable
-	BACKEND_URL: process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000",
-	// API base path
-	// API_BASE_PATH: "/api",
-	API_BASE_PATH: "",
-} as const;
-
-// Helper function to get full API URL
-export const getApiUrl = (endpoint: string): string => {
-	const baseUrl = API_CONFIG.BACKEND_URL;
-	const apiPath = API_CONFIG.API_BASE_PATH;
-	return `${baseUrl}${apiPath}${endpoint}`;
-};
-
 export interface NavItem {
 	title: string;
 	url: string;

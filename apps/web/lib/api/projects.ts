@@ -1,9 +1,11 @@
-import { getApiUrl } from "@/lib/config";
 import type { Project } from "@/lib/config";
+import { api } from "./client";
 
 export interface CreateProjectData {
 	name: string;
 	description?: string;
+	startDate?: string; // ISO 8601 format
+	endDate?: string; // ISO 8601 format
 }
 
 export interface ProjectsResponse {
@@ -12,87 +14,54 @@ export interface ProjectsResponse {
 	hasMore: boolean;
 }
 
-// API functions
 export const projectsApi = {
-	// Get projects with pagination
-	getProjects: async (offset = 0, limit = 20): Promise<Project[]> => {
-		const url = new URL(getApiUrl("/projects"));
-		url.searchParams.set("offset", offset.toString());
-		url.searchParams.set("limit", limit.toString());
-
-		const response = await fetch(url.toString());
-		if (!response.ok) {
-			throw new Error(`Failed to fetch projects: ${response.statusText}`);
-		}
-
-		return response.json();
+	getProjects: async (teamId: string): Promise<Project[]> => {
+		if (!teamId) return [];
+		const response = await api.get(`/api/project/teams/${teamId}/projects`);
+		return response.data || [];
 	},
 
-	// Get single project
 	getProject: async (id: string): Promise<Project> => {
-		const response = await fetch(getApiUrl(`/projects/${id}`));
-		if (!response.ok) {
-			throw new Error(`Failed to fetch project: ${response.statusText}`);
-		}
-
-		return response.json();
+		const response = await api.get(`/api/project/teams/${id}`);
+		return response.data;
 	},
 
-	// Create project
-	createProject: async (data: CreateProjectData): Promise<Project> => {
-		const response = await fetch(getApiUrl("/projects"), {
-			method: "POST",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(data),
-		});
-
-		if (!response.ok) {
-			throw new Error(`Failed to create project: ${response.statusText}`);
-		}
-
-		return response.json();
-	},
-
-	// Update project
-	updateProject: async (
-		id: string,
-		data: Partial<CreateProjectData>,
+	createProject: async (
+		teamId: string,
+		projectData: CreateProjectData,
 	): Promise<Project> => {
-		const response = await fetch(getApiUrl(`/projects/${id}`), {
-			method: "PUT",
-			headers: {
-				"Content-Type": "application/json",
-			},
-			body: JSON.stringify(data),
-		});
-
-		if (!response.ok) {
-			throw new Error(`Failed to update project: ${response.statusText}`);
-		}
-
-		return response.json();
+		const response = await api.post(
+			`/api/project/teams/${teamId}/projects`,
+			projectData,
+		);
+		return response.data;
 	},
 
-	// Delete project
-	deleteProject: async (id: string): Promise<void> => {
-		const response = await fetch(getApiUrl(`/projects/${id}`), {
-			method: "DELETE",
-		});
+	updateProject: async ({
+		teamId,
+		projectId,
+		data,
+	}: {
+		teamId: string;
+		projectId: string;
+		data: Partial<CreateProjectData>;
+	}): Promise<Project> => {
+		const response = await api.patch(
+			`/api/project/teams/${teamId}/projects/${projectId}`,
+			data,
+		);
+		return response.data;
+	},
 
-		if (!response.ok) {
-			throw new Error(`Failed to delete project: ${response.statusText}`);
-		}
+	deleteProject: async (teamId: string, projectId: string): Promise<void> => {
+		await api.delete(`/api/project/teams/${teamId}/projects/${projectId}`);
 	},
 };
 
-// React Query keys
 export const projectKeys = {
 	all: ["projects"] as const,
 	lists: () => [...projectKeys.all, "list"] as const,
-	list: (filters: { offset?: number; limit?: number }) =>
-		[...projectKeys.lists(), filters] as const,
+	listByTeam: (teamId: string) => [...projectKeys.lists(), { teamId }] as const,
 	details: () => [...projectKeys.all, "detail"] as const,
 	detail: (id: string) => [...projectKeys.details(), id] as const,
 };
