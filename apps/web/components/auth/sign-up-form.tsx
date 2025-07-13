@@ -1,6 +1,5 @@
 import { useGoogleLogin } from "@/lib/api/google-auth";
 import { useSignUpMutation } from "@/lib/api/signup";
-import { authClient } from "@/lib/auth/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowRight, LogIn } from "lucide-react";
 import { useForm } from "react-hook-form";
