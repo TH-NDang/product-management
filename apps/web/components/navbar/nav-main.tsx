@@ -9,7 +9,6 @@ import {
 	SidebarMenuButton,
 	SidebarMenuItem,
 } from "@workspace/ui/components/sidebar";
-import { Calendar, CirclePlus, Home, Mail, Users } from "lucide-react";
 import Link from "next/link";
 
 export function NavMain({

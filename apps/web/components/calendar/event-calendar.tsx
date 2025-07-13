@@ -292,7 +292,6 @@ export function EventCalendar({
 								{viewTitle}
 							</h2>
 						</div>
-						<Participants />
 					</div>
 					<div className="flex items-center justify-between gap-2">
 						<div className="flex items-center justify-between gap-2">
@@ -363,7 +362,6 @@ export function EventCalendar({
 									</DropdownMenuItem>
 								</DropdownMenuContent>
 							</DropdownMenu>
-							<ThemeToggle />
 						</div>
 					</div>
 				</div>
