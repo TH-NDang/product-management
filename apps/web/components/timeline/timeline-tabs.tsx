@@ -17,7 +17,7 @@ export interface TimelineTab {
 	badge?: string | number;
 }
 
-export function TimelineTabs({ tabs = [] }: { tabs: TimelineTab[] }) {
+export function TimelineTabs({ tabs = [] }: { tabs: TimelineTab[]; }) {
 	if (tabs.length === 0) {
 		return null;
 	}

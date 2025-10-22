@@ -46,16 +46,17 @@ import {
 } from "@workspace/ui/components/sidebar";
 import { Loader2, Plus } from "lucide-react";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 import { AddProjectModal } from "./add-project-modal";
 
 export function NavProjects() {
 	const { isMobile } = useSidebar();
-	const { isActive, navUtils } = useNavigation();
-	const [deletingProjectId, setDeletingProjectId] = useState<string | null>(
-		null,
-	);
+	const searchParams = useSearchParams();
+	const currentProjectId = searchParams.get('id');
+	const { navUtils } = useNavigation();
+	const [deletingProjectId, setDeletingProjectId] = useState<string | null>(null);
 	const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
 	const [showDeleteDialog, setShowDeleteDialog] = useState<{
 		id: string;
@@ -147,9 +148,10 @@ export function NavProjects() {
 								</SidebarMenuItem>
 							) : (
 								projectNavItems.map((item) => {
-									const active = isActive(item.url);
+									const projectId = item.url.split('id=')[1];
+const active = projectId === currentProjectId;
 									const project = projects.find(
-										(p: Project) => `/projects/${p.id}` === item.url,
+										(p: Project) => `/project?id=${p.id}` === item.url,
 									);
 									const isDropdownOpen = openDropdownId === project?.id;
 
@@ -202,7 +204,7 @@ export function NavProjects() {
 														}
 													>
 														{deleteMutation.isPending &&
-														deletingProjectId === project?.id ? (
+															deletingProjectId === project?.id ? (
 															<Loader2 className="h-4 w-4 animate-spin" />
 														) : (
 															<IconTrash />

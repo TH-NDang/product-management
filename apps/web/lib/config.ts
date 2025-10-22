@@ -7,7 +7,7 @@ import {
 	Mail,
 	Users,
 } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 
 export interface NavItem {
 	title: string;
@@ -127,7 +127,7 @@ export const navUtils = {
 	projectToNavItem: (project: Project): ProjectNavItem => {
 		return {
 			name: project.name,
-			url: `/projects/${project.id}`,
+			url: `/project?id=${project.id}`,
 			icon: IconFolder,
 		};
 	},
@@ -136,15 +136,24 @@ export const navUtils = {
 // Custom hook for navigation
 export const useNavigation = () => {
 	const pathname = usePathname();
+	const searchParams = useSearchParams();
 
 	return {
 		pathname,
 		mainNav: configNav.mainNav,
 		secondaryNav: configNav.secondaryNav,
 		projectNav: configNav.projectNav,
-		isActive: (url: string) => navUtils.isActiveUrl(pathname, url),
-		isActiveStartsWith: (url: string) =>
-			navUtils.isActiveUrlStartsWith(pathname, url),
+		isActive: (url: string) => {
+			// Handle project URLs with query parameters
+			if (url.startsWith('/project?id=')) {
+				const urlObj = new URL(url, 'http://dummy.com');
+				const currentProjectId = searchParams.get('id');
+				const targetProjectId = urlObj.searchParams.get('id');
+				return currentProjectId === targetProjectId;
+			}
+			return pathname === url;
+		},
+		isActiveStartsWith: (url: string) => pathname.startsWith(url),
 		getNavItemByUrl: (url: string, navType: "main" | "secondary" | "project") =>
 			navUtils.getNavItemByUrl(url, navType),
 		navUtils,

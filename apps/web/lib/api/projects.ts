@@ -21,8 +21,8 @@ export const projectsApi = {
 		return response.data || [];
 	},
 
-	getProject: async (id: string): Promise<Project> => {
-		const response = await api.get(`/api/project/teams/${id}`);
+	getProject: async (teamId: string, projectId: string): Promise<Project> => {
+		const response = await api.get(`/api/project/teams/${teamId}/projects/${projectId}`);
 		return response.data;
 	},
 

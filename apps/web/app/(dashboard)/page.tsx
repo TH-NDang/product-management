@@ -7,10 +7,10 @@ import data from "./data.json";
 export default function Page() {
 	return (
 		<>
-			<SectionCards />
+			{/* <SectionCards />
 			<div className="px-4 lg:px-6">
 				<ChartAreaInteractive />
-			</div>
+			</div> */}
 			<DataTable data={data} />
 		</>
 	);

@@ -11,7 +11,6 @@ import {
 	updateProject,
 } from "@/lib/redux-store/projects-slice";
 import {
-	useInfiniteQuery,
 	useMutation,
 	useQuery,
 	useQueryClient,
@@ -28,11 +27,11 @@ export function useProjects(teamId: string) {
 }
 
 // Hook for single project query
-export function useProject(id: string) {
+export function useProject(teamId: string, projectId: string) {
 	return useQuery({
-		queryKey: projectKeys.detail(id),
-		queryFn: () => projectsApi.getProject(id),
-		enabled: !!id,
+		queryKey: projectKeys.detail(projectId),
+		queryFn: () => projectsApi.getProject(teamId, projectId),
+		enabled: !!teamId && !!projectId,
 	});
 }
 
